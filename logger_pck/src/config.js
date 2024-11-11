@@ -2,6 +2,7 @@
 require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
+const { env } = require('process');
 
 // Get path for failed logs from environment or use default
 const FAILED_LOGS_PATH = process.env.UNSYNCED_LOGS_PATH || path.join(__dirname, '../logs/unsynced_logs.json');
@@ -19,6 +20,7 @@ const config = {
         password: process.env.DB_PASSWORD,
         port: process.env.DB_PORT,
     },
+    enviornment: process.env.NODE_ENV || 'development',
     apiPort: (parseInt(process.env.PORT, 10) || 4000) + 1,
     dashboardUrl: process.env.DASHBOARD_URL,
     applicationName: process.env.APPLICATION_NAME,

@@ -10,12 +10,15 @@ const sequelize = new Sequelize(config.db.database, config.db.user, config.db.pa
 });
 
 const Log = sequelize.define('Log', {
+    environment: { type: DataTypes.STRING },
     platform: { type: DataTypes.STRING },
     logType: { type: DataTypes.STRING },
     severity: { type: DataTypes.STRING },
     message: { type: DataTypes.TEXT },
     apiEndpoint: { type: DataTypes.STRING },
     metadata: { type: DataTypes.JSONB },
+    jsondata: { type: DataTypes.JSONB },
+    transactionId: { type: DataTypes.STRING },
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt fields
 });

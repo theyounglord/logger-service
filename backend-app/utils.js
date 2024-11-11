@@ -9,8 +9,8 @@ const { log } = require('logger_pck/src/logger-util');
  * @param {String} severity - The severity level (e.g., 'low', 'medium', 'high').
  * @param {Object} metadata - Additional metadata for the log.
  */
-function logMessage(message, logType = 'info', apiEndpoint = '', severity = 'low', metadata = {}) {
-    log({
+function logMessage(message, logType = 'info', apiEndpoint = '', severity = 'low', metadata = {}, jsondata = {}, transactionId) {
+    log({ 
         logType,
         message,
         severity,
@@ -19,6 +19,11 @@ function logMessage(message, logType = 'info', apiEndpoint = '', severity = 'low
             ...metadata,
             timestamp: new Date().toISOString(),
         },
+        jsondata: {
+            ...jsondata,
+            timestamp: new Date().toISOString(),
+        },
+        transactionId: transactionId
     });
 }
 
@@ -28,8 +33,8 @@ function logMessage(message, logType = 'info', apiEndpoint = '', severity = 'low
  * @param {String} apiEndpoint - The API endpoint associated with the log.
  * @param {Object} metadata - Additional metadata for the log.
  */
-function logError(message, apiEndpoint = '', metadata = {}) {
-    logMessage(message, 'error', apiEndpoint, 'high', metadata);
+function logError(message, apiEndpoint = '', metadata = {}, jsondata = {}, transactionId) {
+    logMessage(message, 'error', apiEndpoint, 'high', metadata, jsondata, transactionId);
 }
 
 /**
@@ -38,8 +43,8 @@ function logError(message, apiEndpoint = '', metadata = {}) {
  * @param {String} apiEndpoint - The API endpoint associated with the log.
  * @param {Object} metadata - Additional metadata for the log.
  */
-function logWarning(message, apiEndpoint = '', metadata = {}) {
-    logMessage(message, 'warning', apiEndpoint, 'medium', metadata);
+function logWarning(message, apiEndpoint = '', metadata = {}, jsondata = {}, transactionId) {
+    logMessage(message, 'warning', apiEndpoint, 'medium', metadata, jsondata, transactionId);
 }
 
 /**
@@ -48,8 +53,8 @@ function logWarning(message, apiEndpoint = '', metadata = {}) {
  * @param {String} apiEndpoint - The API endpoint associated with the log.
  * @param {Object} metadata - Additional metadata for the log.
  */
-function logSuccess(message, apiEndpoint = '', metadata = {}) {
-    logMessage(message, 'success', apiEndpoint, 'low', metadata);
+function logSuccess(message, apiEndpoint = '', metadata = {}, jsondata = {}, transactionId) {
+    logMessage(message, 'success', apiEndpoint, 'low', metadata, jsondata, transactionId);
 }
 
 /**

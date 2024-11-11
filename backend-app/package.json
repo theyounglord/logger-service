@@ -12,7 +12,6 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "logger_pck": "^2.0.0",
-    "logger-service": "file:../looger_pck"
+    "logger_pck": "^3.0.0"
   }
 }
