@@ -15,7 +15,7 @@ export const mockLogs: Log[] = [
     apiEndpoint: '/api/start',
     logType: 'system',
     severity: 'info',
-    message: 'Application started successfully',
+    message: 'Application started successfully with no baclogs and differentiation. Without any objection niether acceptions',
     metadata: {
       version: '1.0.0',
       environment: 'production',
