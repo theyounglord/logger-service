@@ -1,17 +1,17 @@
 import { Log, Platform } from '@/types/logs';
 
 export const platforms: Platform[] = [
-  { id: '1', name: 'Payment Gateway', status: 'healthy', logsCount: 1234 },
-  { id: '2', name: 'PublisherHub', status: 'warning', logsCount: 856 },
+  { id: 'testapp', name: 'testapp', status: 'healthy', logsCount: 1234 },
+  { id: 'testbucket', name: 'testbucket', status: 'warning', logsCount: 856 },
   { id: '3', name: 'AjnaVidya', status: 'error', logsCount: 432 },
   { id: '4', name: 'SSO', status: 'healthy', logsCount: 2341 },
 ];
 
 export const mockLogs: Log[] = [
   {
-    id: '1',
+    id: 'testbucket',
     timestamp: new Date().toISOString(),
-    platform: 'Platform 1',
+    platform: 'testbucket',
     apiEndpoint: '/api/start',
     logType: 'system',
     severity: 'info',
@@ -23,9 +23,9 @@ export const mockLogs: Log[] = [
     },
   },
   {
-    id: '2',
+    id: 'testbucket',
     timestamp: new Date(Date.now() - 5000).toISOString(),
-    platform: 'Platform 2',
+    platform: 'testbucket',
     apiEndpoint: '/api/auth/login',
     logType: 'security',
     severity: 'warning',
@@ -37,9 +37,9 @@ export const mockLogs: Log[] = [
     },
   },
   {
-    id: '3',
+    id: 'testbucket',
     timestamp: new Date(Date.now() - 10000).toISOString(),
-    platform: 'Platform 3',
+    platform: 'testbucket',
     apiEndpoint: '/api/users',
     logType: 'database',
     severity: 'error',
@@ -53,7 +53,7 @@ export const mockLogs: Log[] = [
   {
     id: '4',
     timestamp: new Date(Date.now() - 15000).toISOString(),
-    platform: 'Platform 1',
+    platform: 'SSO',
     apiEndpoint: '/api/data',
     logType: 'api',
     severity: 'info',

@@ -1,3 +1,4 @@
+// types/logs.ts
 export type LogSeverity = 'info' | 'warning' | 'error' | 'debug';
 
 export interface Log {
@@ -14,6 +15,12 @@ export interface Log {
 export interface Platform {
   id: string;
   name: string;
-  status: 'healthy' | 'warning' | 'error';
+  status: LogSeverity | 'healthy';
   logsCount: number;
+}
+
+export interface PlatformData {
+  DISTINCT: string;
+  LOGCOUNT: number;
+  lastSeverity: LogSeverity | null;
 }

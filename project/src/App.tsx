@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// App.tsx
+import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PlatformCard } from '@/components/platform-card';
@@ -6,12 +7,13 @@ import { LogTable } from '@/components/log-table';
 import { LogDetailsDialog } from '@/components/log-details-dialog';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Filters } from '@/components/filters';
-import { platforms, mockLogs } from '@/data/mock-data';
-import { Log } from '@/types/logs';
+import { Log, PlatformData } from '@/types/logs';
 import { Search, ArrowLeft } from 'lucide-react';
+import { mockLogs } from './data/mock-data';
 
 export default function App() {
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [platforms, setPlatforms] = useState<PlatformData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLog, setSelectedLog] = useState<Log | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -22,6 +24,21 @@ export default function App() {
     sortBy: 'createdAt',
     limit: 10,
   });
+
+  // Fetch platforms from API
+  useEffect(() => {
+    const fetchPlatforms = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/platforms');
+        const data: PlatformData[] = await response.json();
+        setPlatforms(data);
+      } catch (error) {
+        console.error('Failed to fetch platforms:', error);
+      }
+    };
+
+    fetchPlatforms();
+  }, []);
 
   const uniqueLogTypes = Array.from(new Set(mockLogs.map(log => log.logType)));
   const uniqueApiEndpoints = Array.from(new Set(mockLogs.map(log => log.metadata.apiEndpoint).filter(Boolean)));
@@ -84,10 +101,15 @@ export default function App() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {platforms.map((platform) => (
               <PlatformCard
-                key={platform.id}
-                platform={platform}
-                isSelected={selectedPlatform === platform.name}
-                onClick={() => setSelectedPlatform(platform.name)}
+                key={platform.DISTINCT}
+                platform={{
+                  id: platform.DISTINCT,
+                  name: platform.DISTINCT,
+                  status: platform.lastSeverity || 'healthy',
+                  logsCount: platform.LOGCOUNT,
+                }}
+                isSelected={selectedPlatform === platform.DISTINCT}
+                onClick={() => setSelectedPlatform(platform.DISTINCT)}
               />
             ))}
           </div>

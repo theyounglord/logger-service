@@ -52,13 +52,32 @@ app.get('/apiendpoints', async (req, res) => {
     }
 });
 
-// create an api to get all the unique platforms
+// Updated API to get all unique platforms with log counts and last log severity
 app.get('/platforms', async (req, res) => {
     try {
-        const platforms = await Log.aggregate('platform', 'DISTINCT', { plain: false });
-        res.json(platforms);
+        const platforms = await Log.findAll({
+            attributes: [
+                [Sequelize.col('platform'), 'DISTINCT'],
+                [Sequelize.fn('COUNT', Sequelize.col('platform')), 'LOGCOUNT'],
+                // Get the severity of the last log by ordering by createdAt and limiting to 1
+                [Sequelize.literal(`(
+                    SELECT "severity"
+                    FROM "Logs" AS "LastLog"
+                    WHERE "LastLog"."platform" = "Log"."platform"
+                    ORDER BY "LastLog"."createdAt" DESC
+                    LIMIT 1
+                )`), 'lastSeverity']
+            ],
+            group: ['platform']
+        });
+
+        res.json(platforms.map(platform => ({
+            DISTINCT: platform.get('DISTINCT'),
+            LOGCOUNT: platform.get('LOGCOUNT'),
+            lastSeverity: platform.get('lastSeverity')
+        })));
     } catch (error) {
-        res.status(500).json({ error: 'Failed to retrieve platforms' });
+        res.status(500).json({ error: 'Failed to retrieve platforms with log counts and last log severity' });
     }
 });
 
