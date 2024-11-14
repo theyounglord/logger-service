@@ -1,4 +1,3 @@
-// src/index.js
 const { sequelize } = require('./db');
 const api = require('./api');
 const config = require('./config');
@@ -10,11 +9,12 @@ async function initializeLoggerService(customConfig = {}) {
     await sequelize.authenticate();
     console.log(`Connected to database: ${config.db.database}`);
 
-    // Start API server for log viewing
-    api.listen(config.apiPort || 4000, () => {
-        console.log(`Logger dashboard API server running on port ${config.apiPort}`);
+    // Start API server on any available port
+    const server = api.listen(0, () => {
+        const port = server.address().port;
+        console.log(`Logger dashboard API server running on available port ${port}`);
     });
-
+ 
     // Sync any failed logs stored locally at startup
     syncFailedLogs();
 
