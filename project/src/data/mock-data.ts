@@ -1,10 +1,10 @@
 import { Log, Platform } from '@/types/logs';
 
 export const platforms: Platform[] = [
-  { id: '1', name: 'Platform 1', status: 'healthy', logsCount: 1234 },
-  { id: '2', name: 'Platform 2', status: 'warning', logsCount: 856 },
-  { id: '3', name: 'Platform 3', status: 'error', logsCount: 432 },
-  { id: '4', name: 'Platform 4', status: 'healthy', logsCount: 2341 },
+  { id: '1', name: 'Payment Gateway', status: 'healthy', logsCount: 1234 },
+  { id: '2', name: 'PublisherHub', status: 'warning', logsCount: 856 },
+  { id: '3', name: 'AjnaVidya', status: 'error', logsCount: 432 },
+  { id: '4', name: 'SSO', status: 'healthy', logsCount: 2341 },
 ];
 
 export const mockLogs: Log[] = [
