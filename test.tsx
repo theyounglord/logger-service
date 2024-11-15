@@ -15,18 +15,16 @@ interface FiltersProps {
 
 export function Filters({ onFilterChange, selectedPlatform }: FiltersProps) {
   const [logTypes, setLogTypes] = useState<string[]>([]);
-  const [apiEndpoints, setApiEndpoints] = useState<string[]>([]);
   const [date, setDate] = useState<Date>();
   const [logType, setLogType] = useState<string>('All Types');
-  const [apiEndpoint, setApiEndpoint] = useState<string>('All Endpoints');
+  const [apiEndpoint, setApiEndpoint] = useState<string>('all');
   const [sortBy, setSortBy] = useState('createdAt');
   const [limit, setLimit] = useState('10');
   const [severity, setSeverity] = useState<string>('all');
   const [userEmail, setUserEmail] = useState<string>('');
-  const [lastNMinutes, setLastNMinutes] = useState<string>('');
 
   // Available severity options
-  const severityOptions: LogSeverity[] = ['info', 'warning', 'error', 'debug', 'success'];
+  const severityOptions: LogSeverity[] = ['info', 'warning', 'error', 'debug'];
 
   // Fetch log types dynamically based on the selected platform
   useEffect(() => {
@@ -44,42 +42,22 @@ export function Filters({ onFilterChange, selectedPlatform }: FiltersProps) {
     fetchLogTypes();
   }, [selectedPlatform]);
 
-  // Fetch API endpoints dynamically based on the selected platform
-  useEffect(() => {
-    const fetchApiEndpoints = async () => {
-      try {
-        const platformQuery = selectedPlatform ? `?platform=${selectedPlatform}` : '';
-        const response = await fetch(`http://localhost:3001/apiendpoints${platformQuery}`);
-        const data = await response.json();
-        setApiEndpoints(data);
-      } catch (error) {
-        console.error('Failed to fetch API endpoints:', error);
-      }
-    };
-
-    fetchApiEndpoints();
-  }, [selectedPlatform]);
-
   const handleFilterChange = (updates: Partial<any>) => {
     onFilterChange({
-      platform: selectedPlatform,
       date,
       logType: logType === 'All Types' ? '' : logType,
-      apiEndpoint: apiEndpoint === 'All Endpoints' ? '' : apiEndpoint,
+      apiEndpoint: apiEndpoint === 'all' ? '' : apiEndpoint,
       sortBy,
       limit: parseInt(limit),
       severity: severity === 'all' ? '' : severity,
       userEmail: userEmail.trim(),
-      lastNMinutes: lastNMinutes.trim(),
       ...updates,
     });
   };
 
   return (
     <div className="space-y-4">
-      {/* First Row of Filters */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Date Filter */}
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -91,16 +69,15 @@ export function Filters({ onFilterChange, selectedPlatform }: FiltersProps) {
             <Calendar
               mode="single"
               selected={date}
-              onSelect={(selectedDate) => {
-                setDate(selectedDate);
-                handleFilterChange({ date: selectedDate });
+              onSelect={(date) => {
+                setDate(date);
+                handleFilterChange({ date });
               }}
               initialFocus
             />
           </PopoverContent>
         </Popover>
 
-        {/* Log Types Filter */}
         <Select value={logType} onValueChange={(value) => {
           setLogType(value);
           handleFilterChange({ logType: value === 'All Types' ? '' : value });
@@ -109,13 +86,13 @@ export function Filters({ onFilterChange, selectedPlatform }: FiltersProps) {
             <SelectValue placeholder="Log Type" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="All Types">All Types</SelectItem>
             {logTypes.map((type) => (
               <SelectItem key={type} value={type}>{type}</SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        {/* Severity Filter */}
         <Select value={severity} onValueChange={(value) => {
           setSeverity(value);
           handleFilterChange({ severity: value === 'all' ? '' : value });
@@ -131,7 +108,6 @@ export function Filters({ onFilterChange, selectedPlatform }: FiltersProps) {
           </SelectContent>
         </Select>
 
-        {/* User Email Filter */}
         <Input
           placeholder="Filter by user email..."
           value={userEmail}
@@ -143,24 +119,20 @@ export function Filters({ onFilterChange, selectedPlatform }: FiltersProps) {
         />
       </div>
 
-      {/* Second Row of Filters */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* API Endpoints Filter */}
-        <Select value={apiEndpoint} onValueChange={(value) => {
+      <Select value={apiEndpoint} onValueChange={(value) => {
           setApiEndpoint(value);
-          handleFilterChange({ apiEndpoint: value === 'All Endpoints' ? '' : value });
+          handleFilterChange({ apiEndpoint: value === 'all' ? '' : value });
         }}>
           <SelectTrigger>
             <SelectValue placeholder="API Endpoint" />
           </SelectTrigger>
           <SelectContent>
-            {apiEndpoints.map((endpoint) => (
-              <SelectItem key={endpoint} value={endpoint}>{endpoint}</SelectItem>
-            ))}
+            <SelectItem value="all">All Endpoints</SelectItem>
+            {/* Add other endpoints dynamically if needed */}
           </SelectContent>
         </Select>
-
-        {/* Sort By Filter */}
+        
         <Select value={sortBy} onValueChange={(value) => {
           setSortBy(value);
           handleFilterChange({ sortBy: value });
@@ -174,18 +146,6 @@ export function Filters({ onFilterChange, selectedPlatform }: FiltersProps) {
           </SelectContent>
         </Select>
 
-        {/* Last N Minutes Filter */}
-        <Input
-          placeholder="Filter by last n minutes..."
-          value={lastNMinutes}
-          onChange={(e) => {
-            setLastNMinutes(e.target.value);
-            handleFilterChange({ lastNMinutes: e.target.value.trim() });
-          }}
-          className="h-10"
-        />
-
-        {/* Limit Filter */}
         <Select value={limit} onValueChange={(value) => {
           setLimit(value);
           handleFilterChange({ limit: parseInt(value) });

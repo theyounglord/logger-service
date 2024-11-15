@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Log } from '@/types/logs';
 import {
   Dialog,
@@ -7,6 +8,8 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button'; // Assuming you have a Button component
 
 interface LogDetailsDialogProps {
   log: Log | null;
@@ -15,6 +18,8 @@ interface LogDetailsDialogProps {
 }
 
 export function LogDetailsDialog({ log, open, onOpenChange }: LogDetailsDialogProps) {
+  const [wrapJsonData, setWrapJsonData] = useState(true);
+
   if (!log) return null;
 
   return (
@@ -27,7 +32,7 @@ export function LogDetailsDialog({ log, open, onOpenChange }: LogDetailsDialogPr
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Timestamp</label>
-              <p className="font-mono">{new Date(log.timestamp).toLocaleString()}</p>
+              <p className="font-mono">{new Date(log.createdAt).toLocaleString()}</p>
             </div>
             <div>
               <label className="text-sm font-medium">Platform</label>
@@ -46,14 +51,32 @@ export function LogDetailsDialog({ log, open, onOpenChange }: LogDetailsDialogPr
             <label className="text-sm font-medium">Message</label>
             <p className="mt-1">{log.message}</p>
           </div>
-          <div>
-            <label className="text-sm font-medium">Metadata</label>
-            <ScrollArea className="h-[200px] mt-1 rounded-md border p-4">
-              <pre className="text-sm">
-                {JSON.stringify(log.metadata, null, 2)}
-              </pre>
-            </ScrollArea>
-          </div>
+          <Tabs defaultValue="metadata">
+            <TabsList>
+              <TabsTrigger value="metadata">Metadata</TabsTrigger>
+              <TabsTrigger value="jsondata">Jsondata</TabsTrigger>
+            </TabsList>
+            <TabsContent value="metadata">
+              <ScrollArea className="h-[200px] mt-1 rounded-md border p-4">
+                <pre className="text-sm">
+                  {JSON.stringify(log.metadata, null, 2)}
+                </pre>
+              </ScrollArea>
+            </TabsContent>
+            <TabsContent value="jsondata">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium">Jsondata</label>
+              </div>
+              <ScrollArea className="h-[200px] mt-1 rounded-md border p-4 overflow-auto max-w-full">
+                <pre
+                  className="text-sm whitespace-pre-wrap"
+                  style={{ wordBreak: 'break-word' }}
+                >
+                  {JSON.stringify(log.jsondata, null, 2)}
+                </pre>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>

@@ -22,6 +22,7 @@ export function LogTable({ logs, onViewDetails }: LogTableProps) {
     warning: 'bg-yellow-500',
     error: 'bg-red-500',
     debug: 'bg-gray-500',
+    success: 'bg-green-500',
   };
 
   return (
@@ -42,7 +43,7 @@ export function LogTable({ logs, onViewDetails }: LogTableProps) {
           {logs.map((log) => (
             <TableRow key={log.id}>
               <TableCell className="font-mono">
-                {new Date(log.timestamp).toLocaleString()}
+                {new Date(log.createdAt).toLocaleString()}
               </TableCell>
               <TableCell>{log.platform}</TableCell>
               <TableCell>{log.apiEndpoint}</TableCell>

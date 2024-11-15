@@ -9,15 +9,37 @@ app.use(cors({ origin: '*' }));
 
 // Endpoint to retrieve logs (e.g., by platform, logType, date, apiEndpoint, sortBy, limit)
 app.get('/logs', async (req, res) => {
-    const { platform, logType, date, apiEndpoint, sortBy = 'createdAt', limit = 10 } = req.query;
-    
+    const {
+        platform,
+        logType,
+        apiEndpoint,
+        severity,
+        userEmail,
+        lastNMinutes,
+        sortBy = 'createdAt',
+        limit = 10
+    } = req.query;
+    const { date } = req.body;
+
     // Building an array for the `AND` conditions
     const conditions = [];
 
     if (platform) conditions.push({ platform });
     if (logType) conditions.push({ logType });
-    if (date) conditions.push({ createdAt: { [Sequelize.Op.gte]: new Date(date) } });
     if (apiEndpoint) conditions.push({ apiEndpoint });
+    if (severity) conditions.push({ severity });
+    if (userEmail) conditions.push({ userEmail });
+
+    // Handle `date` filter
+    if (date) {
+        conditions.push({ createdAt: { [Sequelize.Op.gte]: new Date(date) } });
+    }
+
+    // Handle `lastNMinutes` filter
+    if (lastNMinutes) {
+        const minutesAgo = new Date(Date.now() - parseInt(lastNMinutes) * 60000);
+        conditions.push({ createdAt: { [Sequelize.Op.gte]: minutesAgo } });
+    }
 
     const where = conditions.length ? { [Sequelize.Op.and]: conditions } : {};
 
@@ -32,25 +54,31 @@ app.get('/logs', async (req, res) => {
         const logs = await Log.findAll(options);
         res.json(logs);
     } catch (error) {
-        res.status(500).json({ error: 'Failed to retrieve logs' });
+        console.error('Error retrieving logs:', error); // Debugging log
+        res.status(500).json({ error: 'Failed to retrieve logs', details: error.message });
     }
 });
 
-// create an api to get all the unique api endpoints of a platform
+// create an API to get all unique API endpoints by platform or all if no platform specified
 app.get('/apiendpoints', async (req, res) => {
     const { platform } = req.query;
-    const options = {
-        where: { platform },
-        attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('apiEndpoint')), 'apiEndpoint']],
-    };
 
     try {
-        const apiEndpoints = await Log.findAll(options);
-        res.json(apiEndpoints);
+        const where = platform ? { platform } : {}; // Filter by platform if provided
+        const apiEndpoints = await Log.findAll({
+            attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('apiEndpoint')), 'apiEndpoint']],
+            where,
+        });
+
+        // Add "All Endpoints" as the first entry
+        const result = ['All Endpoints', ...apiEndpoints.map(endpoint => endpoint.get('apiEndpoint'))];
+
+        res.json(result); // Return an array of unique API endpoints with "All Endpoints"
     } catch (error) {
         res.status(500).json({ error: 'Failed to retrieve API endpoints' });
     }
 });
+
 
 // Updated API to get all unique platforms with log counts and last log severity
 app.get('/platforms', async (req, res) => {
@@ -81,15 +109,27 @@ app.get('/platforms', async (req, res) => {
     }
 });
 
-// create an api to get all the unique log types
+// create an API to get all the unique log types by platform, or all if no platform specified
+// Updated API to get all unique log types by platform or all if no platform is provided
 app.get('/logtypes', async (req, res) => {
+    const { platform } = req.query;
+
     try {
-        const logTypes = await Log.aggregate('logType', 'DISTINCT', { plain: false });
-        res.json(logTypes);
+        const where = platform ? { platform } : {}; // Filter by platform if provided
+        const logTypes = await Log.findAll({
+            attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('logType')), 'logType']],
+            where,
+        });
+
+        // Add "All Types" as the first entry
+        const result = ['All Types', ...logTypes.map(type => type.get('logType'))];
+
+        res.json(result); // Return an array of unique log types with "All Types"
     } catch (error) {
         res.status(500).json({ error: 'Failed to retrieve log types' });
     }
 });
+
 
 // create an api to get last n unique transactionIds
 app.get('/transactionids', async (req, res) => {

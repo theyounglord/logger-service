@@ -11,8 +11,8 @@ interface PlatformCardProps {
 
 export function PlatformCard({ platform, onClick, isSelected }: PlatformCardProps) {
   // Define the type for the statusIcon object
-  const statusIcon: Record<LogSeverity | "healthy", JSX.Element> = {
-    healthy: <CheckCircle className="h-5 w-5 text-green-500" />,
+  const statusIcon: Record<LogSeverity | "success", JSX.Element> = {
+    success: <CheckCircle className="h-5 w-5 text-green-500" />, // Update "healthy" to "success"
     info: <Info className="h-5 w-5 text-blue-500" />,
     warning: <AlertTriangle className="h-5 w-5 text-yellow-500" />,
     error: <Activity className="h-5 w-5 text-red-500" />,

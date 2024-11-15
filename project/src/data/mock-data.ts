@@ -1,10 +1,10 @@
 import { Log, Platform } from '@/types/logs';
 
 export const platforms: Platform[] = [
-  { id: 'testapp', name: 'testapp', status: 'healthy', logsCount: 1234 },
+  { id: 'testapp', name: 'testapp', status: 'success', logsCount: 1234 },
   { id: 'testbucket', name: 'testbucket', status: 'warning', logsCount: 856 },
   { id: '3', name: 'AjnaVidya', status: 'error', logsCount: 432 },
-  { id: '4', name: 'SSO', status: 'healthy', logsCount: 2341 },
+  { id: '4', name: 'SSO', status: 'success', logsCount: 2341 },
 ];
 
 export const mockLogs: Log[] = [
@@ -15,7 +15,7 @@ export const mockLogs: Log[] = [
     apiEndpoint: '/api/start',
     logType: 'system',
     severity: 'info',
-    message: 'Application started successfully with no baclogs and differentiation. Without any objection niether acceptions',
+    message: 'Application started successfully',
     metadata: {
       version: '1.0.0',
       environment: 'production',

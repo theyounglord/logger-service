@@ -9,7 +9,7 @@ const { log } = require('logger_pck/src/logger-util');
  * @param {String} severity - The severity level (e.g., 'low', 'medium', 'high').
  * @param {Object} metadata - Additional metadata for the log.
  */
-function logMessage(message, logType = 'info', apiEndpoint = '', severity = 'low', metadata = {}, jsondata = {}, transactionId) {
+function logMessage(message, logType, apiEndpoint = '', severity = 'info', metadata = {}, jsondata = {}, transactionId) {
     log({ 
         logType,
         message,
@@ -33,8 +33,8 @@ function logMessage(message, logType = 'info', apiEndpoint = '', severity = 'low
  * @param {String} apiEndpoint - The API endpoint associated with the log.
  * @param {Object} metadata - Additional metadata for the log.
  */
-function logError(message, apiEndpoint = '', metadata = {}, jsondata = {}, transactionId) {
-    logMessage(message, 'error', apiEndpoint, 'high', metadata, jsondata, transactionId);
+function logError(message, logType, apiEndpoint = '', metadata = {}, jsondata = {}, transactionId) {
+    logMessage(message, logType, apiEndpoint, 'error', metadata, jsondata, transactionId);
 }
 
 /**
