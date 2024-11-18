@@ -12,6 +12,7 @@ app.get('/logs', async (req, res) => {
     const {
         platform,
         logType,
+        date,
         apiEndpoint,
         severity,
         userEmail,
@@ -19,7 +20,7 @@ app.get('/logs', async (req, res) => {
         sortBy = 'createdAt',
         limit = 10
     } = req.query;
-    const { date } = req.body;
+    // const { date } = req.body;
 
     // Building an array for the `AND` conditions
     const conditions = [];
