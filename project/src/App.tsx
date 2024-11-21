@@ -7,7 +7,7 @@ import { LogDetailsDialog } from '@/components/log-details-dialog';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Filters } from '@/components/filters';
 import { Log, PlatformData } from '@/types/logs';
-import { Search, ArrowLeft } from 'lucide-react';
+import { Search, ArrowLeft, RefreshCw } from 'lucide-react';
 
 export default function App() {
   const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
@@ -16,6 +16,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLog, setSelectedLog] = useState<Log | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [filteredLogs, setFilteredLogs] = useState<Log[]>([]); // For storing filtered logs
   const [filters, setFilters] = useState({
     date: null,
     logType: '',
@@ -27,45 +28,77 @@ export default function App() {
     lastNMinutes: '',
   });
 
-  // Fetch Platforms
-  useEffect(() => {
-    const fetchPlatforms = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/platforms');
-        const data: PlatformData[] = await response.json();
-        setPlatforms(data);
-      } catch (error) {
-        console.error('Failed to fetch platforms:', error);
-      }
-    };
+  // Function to fetch platforms
+  const fetchPlatforms = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/platforms');
+      const data: PlatformData[] = await response.json();
+      setPlatforms(data);
+    } catch (error) {
+      console.error('Failed to fetch platforms:', error);
+    }
+  };
 
+  // Function to fetch logs
+  const fetchLogs = async () => {
+    const queryParams = new URLSearchParams();
+
+    // Include platform if selected
+    if (selectedPlatform) queryParams.append('platform', selectedPlatform);
+
+    // Append all other filters
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) queryParams.append(key, value.toString());
+    });
+
+    try {
+      const response = await fetch(`http://localhost:3001/logs?${queryParams.toString()}`);
+      const data: Log[] = await response.json();
+      setLogs(data);
+    } catch (error) {
+      console.error('Failed to fetch logs:', error);
+    }
+  };
+
+  // Effect to fetch platforms on mount
+  useEffect(() => {
     fetchPlatforms();
   }, []);
 
-  // Fetch Logs Based on Filters
+  // Effect to fetch logs when filters or selected platform changes
   useEffect(() => {
-    const fetchLogs = async () => {
-      const queryParams = new URLSearchParams();
-
-      // Include platform if selected
-      if (selectedPlatform) queryParams.append('platform', selectedPlatform);
-
-      // Append all other filters
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value.toString());
-      });
-
-      try {
-        const response = await fetch(`http://localhost:3001/logs?${queryParams.toString()}`);
-        const data: Log[] = await response.json();
-        setLogs(data);
-      } catch (error) {
-        console.error('Failed to fetch logs:', error);
-      }
-    };
-
     fetchLogs();
   }, [filters, selectedPlatform]);
+
+  // Effect to handle search query and filter logs
+  useEffect(() => {
+    if (!searchQuery) {
+      setFilteredLogs(logs); // Reset to all logs if no search query
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = logs.filter((log) => {
+      // Check if any field contains the search query
+      return (
+        log.message?.toLowerCase().includes(query) ||
+        log.platform?.toLowerCase().includes(query) ||
+        log.apiEndpoint?.toLowerCase().includes(query) ||
+        log.logType?.toLowerCase().includes(query) ||
+        log.severity?.toLowerCase().includes(query) ||
+        JSON.stringify(log.metadata)?.toLowerCase().includes(query) || // Search in metadata
+        JSON.stringify(log.jsondata)?.toLowerCase().includes(query) // Search in JSON data
+      );
+    });
+
+    setFilteredLogs(filtered);
+  }, [searchQuery, logs]);
+
+  // Refresh handler
+  const handleRefresh = async () => {
+    await fetchPlatforms();
+    await fetchLogs();
+  };
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
@@ -90,14 +123,24 @@ export default function App() {
                 </h1>
                 <ThemeToggle />
               </div>
-              <div className="relative w-96">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search logs..."
-                  className="pl-8"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              <div className="flex items-center gap-4">
+                <div className="relative w-96">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search logs..."
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRefresh}
+                  className="hover:bg-muted"
+                >
+                  <RefreshCw className="h-5 w-5" />
+                </Button>
               </div>
             </div>
           </div>
@@ -142,7 +185,7 @@ export default function App() {
               {/* Scrollable Table */}
               <div className="flex-1 overflow-auto">
                 <LogTable
-                  logs={logs}
+                  logs={filteredLogs} // Use filtered logs
                   onViewDetails={(log) => {
                     setSelectedLog(log);
                     setIsDialogOpen(true);

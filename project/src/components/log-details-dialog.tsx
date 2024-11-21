@@ -20,6 +20,14 @@ interface LogDetailsDialogProps {
 export function LogDetailsDialog({ log, open, onOpenChange }: LogDetailsDialogProps) {
   const [wrapJsonData, setWrapJsonData] = useState(true);
 
+  const severityColor = {
+    info: 'bg-blue-500',
+    warning: 'bg-yellow-500',
+    error: 'bg-red-500',
+    debug: 'bg-gray-500',
+    success: 'bg-green-500',
+  };
+
   if (!log) return null;
 
   return (
@@ -44,7 +52,9 @@ export function LogDetailsDialog({ log, open, onOpenChange }: LogDetailsDialogPr
             </div>
             <div>
               <label className="text-sm font-medium">Severity</label>
-              <Badge variant="secondary">{log.severity}</Badge>
+              <Badge variant="secondary" className={severityColor[log.severity]}>
+                {log.severity}
+              </Badge>
             </div>
           </div>
           <div>
@@ -64,9 +74,7 @@ export function LogDetailsDialog({ log, open, onOpenChange }: LogDetailsDialogPr
               </ScrollArea>
             </TabsContent>
             <TabsContent value="jsondata">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium">Jsondata</label>
-              </div>
+              <div className="flex items-center justify-between mb-2"></div>
               <ScrollArea className="h-[200px] mt-1 rounded-md border p-4 overflow-auto max-w-full">
                 <pre
                   className="text-sm whitespace-pre-wrap"
