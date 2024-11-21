@@ -122,6 +122,14 @@ export default function App() {
                   {selectedPlatform || 'Logger Dashboard'}
                 </h1>
                 <ThemeToggle />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRefresh}
+                  className="hover:bg-muted"
+                >
+                  <RefreshCw className="h-5 w-5" />
+                </Button>
               </div>
               <div className="flex items-center gap-4">
                 <div className="relative w-96">
@@ -133,14 +141,6 @@ export default function App() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleRefresh}
-                  className="hover:bg-muted"
-                >
-                  <RefreshCw className="h-5 w-5" />
-                </Button>
               </div>
             </div>
           </div>
