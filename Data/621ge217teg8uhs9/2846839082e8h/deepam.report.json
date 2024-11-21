@@ -1,0 +1,41 @@
+{synced: true}
+{
+    "SessionFile": "9add3afd-6c18-4a20-9cc5-c26955863a40",
+    "Session": 1,
+    "sessionresult": [
+        {
+            "date": "11/19/2024",
+            "time": "18:4",
+            "DifficultLevel": "Intermediate",
+            "Gun": "DC",
+            "Mode": "Guided",
+            "Language": "English",
+            "ModuleType": "TIG",
+            "Hand": "Right",
+            "WorkpiecePos": "",
+            "WorkpieceName": "Butt V",
+            "MaterialType": "Stainles Steel",
+            "MaterialThickness": "6",
+            "FillerMaterial": "Filler Material 1",
+            "FillerThickness": "3.2",
+            "GasType": "Shielding gas 2",
+            "Percentage": 0.0,
+            "Result": "Fail",
+            "exercisetime": "0 min 15 Sec",
+            "difficulty": "Beginner",
+            "distance": "55%",
+            "distancevalue": "7.13 mm",
+            "speed": "7%",
+            "speedvalue": "62.35 mm/s",
+            "travelangle": "0%",
+            "travelanglevalue": "6.12 ",
+            "workangle": "55%",
+            "workanglevalue": "85.67 ",
+            "ampere": "90A",
+            "voltage": "20A",
+            "porosity": "",
+            "spatter": "",
+            "incomplete": ""
+        }
+    ]
+}

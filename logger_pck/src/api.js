@@ -4,8 +4,20 @@ const { Log } = require('./db');
 const Sequelize = require('sequelize');
 const app = express();
 const cors = require('cors');
+const { syncFiles } = require('./fileSyncService');
 
 app.use(cors({ origin: '*' }));
+
+// Route to trigger file synchronization manually
+app.post('/syncDataNow', async (req, res) => {
+    try {
+        await syncFiles();
+        res.status(200).json({ message: 'Data synchronization triggered successfully.' });
+    } catch (error) {
+        console.error('Error triggering data synchronization:', error);
+        res.status(500).json({ error: 'Failed to trigger data synchronization.' });
+    }
+});
 
 // Endpoint to retrieve logs (e.g., by platform, logType, date, apiEndpoint, sortBy, limit)
 app.get('/logs', async (req, res) => {
@@ -71,8 +83,8 @@ app.get('/apiendpoints', async (req, res) => {
             where,
         });
 
-        // Add "All Endpoints" as the first entry
-        const result = ['All Endpoints', ...apiEndpoints.map(endpoint => endpoint.get('apiEndpoint'))];
+        // Add "All Endpoints" as the first entry and filter out empty or invalid values
+        const result = ['All Endpoints', ...apiEndpoints.map(endpoint => endpoint.get('apiEndpoint')).filter(Boolean)];
 
         res.json(result); // Return an array of unique API endpoints with "All Endpoints"
     } catch (error) {
@@ -122,14 +134,15 @@ app.get('/logtypes', async (req, res) => {
             where,
         });
 
-        // Add "All Types" as the first entry
-        const result = ['All Types', ...logTypes.map(type => type.get('logType'))];
+        // Add "All Types" as the first entry and filter out empty values
+        const result = ['All Types', ...logTypes.map(type => type.get('logType')).filter(Boolean)];
 
         res.json(result); // Return an array of unique log types with "All Types"
     } catch (error) {
         res.status(500).json({ error: 'Failed to retrieve log types' });
     }
 });
+
 
 
 // create an api to get last n unique transactionIds

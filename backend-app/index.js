@@ -21,16 +21,27 @@ const loggedExampleFunction = logWithExecutionTime(exampleFunction, 'exampleFunc
 app.get('/test', async (req, res) => {
     try {
         const result = await loggedExampleFunction('test param');
-        logSuccess('GET /test endpoint accessed', '/test', { method: 'GET' });
+        logSuccess({
+            message: 'Successfully processed test param',
+            apiEndpoint: '/test',
+            metadata: { result },
+        });
         res.send(result);
     } catch (error) {
-        logError('Error accessing /test endpoint', '/test', { method: 'GET' });
+        logError({
+            message: 'An error occurred while processing test param',
+            apiEndpoint: '/test',
+            metadata: { error: error.message },
+        });
         res.status(500).send('Error occurred');
     }
 });
 
 // Start the server and log a success message
 app.listen(PORT, () => {
-    logSuccess(`Server started on port ${PORT}`, '/start', { port: PORT });
+    logSuccess({
+        message: `Backend server running on http://localhost:${PORT}`,
+        apiEndpoint: '/',
+    });
     console.log(`Backend server running on http://localhost:${PORT}`);
 });
