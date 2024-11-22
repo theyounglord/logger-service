@@ -13,9 +13,10 @@ async function initializeLoggerService(customConfig = {}) {
 
     await ensureLogTableExists(); // Ensure the Log table exists
 
-    // Start API server for log viewing
-    api.listen(config.apiPort || 4000, () => {
-        console.log(`Logger dashboard API server running on port ${config.apiPort}`);
+    // Start API server for log viewing on any available port (port 0 lets OS assign a port)
+    const server = api.listen(config.apiPort, () => {
+        const assignedPort = server.address().port; // Retrieve the dynamically assigned port
+        console.log(`API server started on port ${assignedPort}`);
     });
 
     // Sync any failed logs stored locally at startup

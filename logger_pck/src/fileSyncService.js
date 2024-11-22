@@ -45,18 +45,14 @@ async function syncFiles() {
 async function processReportFile(filePath, userId, appId) {
     try {
         const data = fs.readFileSync(filePath, 'utf8');
-        const lines = data.split('\n');
+        const jsonData = JSON.parse(data);
 
-        if (lines[0].trim() === '{synced: true}') {
+        if (jsonData.synced === true) {
             console.log(`File ${filePath} already synced, skipping.`);
             return;
         }
 
-        // Remove first line if it's the synced info
-        const content = lines[0].includes('{synced: true}') ? lines.slice(1).join('\n') : data;
-
-        const jsonData = JSON.parse(content);
-
+        // Process the report data
         await log({
             logType: 'report',
             message: `Report data from user ${userId}, app ${appId}`,
@@ -66,8 +62,11 @@ async function processReportFile(filePath, userId, appId) {
             jsondata: jsonData, // Directly pass the entire JSON content
         });
 
-        // Prepend '{synced: true}\n' to the file
-        fs.writeFileSync(filePath, '{synced: true}\n' + content, 'utf8');
+        // Add 'synced: true' to the JSON data
+        jsonData.synced = true;
+
+        // Write the updated JSON back to the file
+        fs.writeFileSync(filePath, JSON.stringify(jsonData, null, 2), 'utf8');
         console.log(`File ${filePath} synced and updated.`);
     } catch (error) {
         console.error(`Error processing report file ${filePath}:`, error);

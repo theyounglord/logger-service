@@ -11,7 +11,6 @@
   "description": "",
   "dependencies": {
     "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "logger_pck": "file:../logger_pck"
+    "express": "^4.21.1"
   }
 }
