@@ -10,6 +10,7 @@ logger_pck
     │   ├── db.js
     │   ├── fileSyncService.js
     │   ├── index.js
+    │   ├── logFunction.js
     │   ├── logger-util.js
     │   ├── logger.js
     │   ├── sync.js
@@ -1806,7 +1807,7 @@ File: package.json
 
 {
   "name": "logger_pck",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -2473,11 +2474,10 @@ module.exports = { sequelize, Log, ensureLogTableExists };
 File: fileSyncService.js
 
 // src/fileSyncService.js
-
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
-const { log } = require('./logger-util');
+const { log } = require('./logFunction');
 
 async function syncFiles() {
     const rootFolder = config.rootFolderPath;
@@ -2582,7 +2582,6 @@ const { sequelize } = require('./db');
 const api = require('./api');
 const config = require('./config');
 const { syncFailedLogs } = require('./sync');
-const { syncFiles } = require('./fileSyncService');
 const { ensureLogTableExists } = require('./db');
 
 async function initializeLoggerService(customConfig = {}) {
@@ -2601,9 +2600,6 @@ async function initializeLoggerService(customConfig = {}) {
     // Sync any failed logs stored locally at startup
     syncFailedLogs();
 
-    // Schedule file synchronization
-    setInterval(syncFiles, config.syncFilesInterval);
-
     return { log: async (logData) => sequelize.models.Log.create(logData) };
 }
 
@@ -2611,30 +2607,15 @@ module.exports = { initializeLoggerService };
 
 
 
-File: logger-util.js
+File: logFunction.js
 
-// src/logger-util.js
-const { initializeLoggerService } = require('./index');
-const { Log, ensureLogTableExists } = require('./db');
+// src/logFunction.js
+const { Log } = require('./db');
 const config = require('./config');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-let logger;
-let isTableReady = false; // Flag to check if the log table is ready
 
-// Initialize logger service and ensure the Log table exists
-async function initializeLogger() {
-    try {
-        await ensureLogTableExists(); // Ensure the log table exists
-        isTableReady = true; // Set flag to indicate the table is ready
-        logger = await initializeLoggerService(config); // Initialize the logger service
-        console.log('Logger service initialized successfully.');
-    } catch (error) {
-        console.error('Failed to initialize the logger service or ensure log table exists:', error.message);
-    }
-}
-
-// Save failed logs locally
+// Helper function to save failed logs locally
 function saveFailedLogLocally(logData) {
     try {
         fs.appendFileSync(config.failedLogsPath, JSON.stringify(logData) + '\n');
@@ -2648,7 +2629,7 @@ function saveFailedLogLocally(logData) {
 async function log({ platform, logType, message, severity, apiEndpoint, metadata = {}, jsondata = {}, transactionId }) {
     const logData = {
         environment: config.environment,
-        platform: config.applicationName,
+        platform: platform || config.applicationName,
         logType,
         severity,
         apiEndpoint,
@@ -2658,17 +2639,39 @@ async function log({ platform, logType, message, severity, apiEndpoint, metadata
         transactionId: transactionId || uuidv4(),
     };
 
-    if (logger && logger.log) {
-        try {
-            await logger.log(logData);
-            console.log('Log saved to database');
-        } catch (error) {
-            console.error('Failed to log to database:', error.message);
-            saveFailedLogLocally(logData);
-        }
-    } else {
-        console.warn('Logger not initialized. Logging locally:', logData.message);
+    try {
+        await Log.create(logData);
+        console.log('Log saved to database');
+    } catch (error) {
+        console.error('Failed to log to database:', error.message);
         saveFailedLogLocally(logData);
+    }
+}
+
+module.exports = { log };
+
+
+
+File: logger-util.js
+
+// src/logger-util.js
+const { initializeLoggerService } = require('./index');
+const { ensureLogTableExists } = require('./db');
+const { log } = require('./logFunction');
+const config = require('./config');
+
+// Initialize logger service and ensure the Log table exists
+async function initializeLogger() {
+    try {
+        await ensureLogTableExists(); // Ensure the log table exists
+        await initializeLoggerService(config); // Initialize the logger service
+        console.log('Logger service initialized successfully.');
+
+        // Schedule file synchronization after logger is initialized
+        const { syncFiles } = require('./fileSyncService');
+        setInterval(syncFiles, config.syncFilesInterval);
+    } catch (error) {
+        console.error('Failed to initialize the logger service or ensure log table exists:', error.message);
     }
 }
 

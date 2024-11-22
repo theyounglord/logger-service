@@ -1,45 +1,94 @@
-# Logger PCK
+Here's the revised `README.md` to clarify that the `util.js` file is a helper that users need to place in their own project's `util` folder, along with the code for the `util.js` file:
 
-A robust logging package with database integration and local storage fallback, allowing flexible logging for applications. This package is designed to log messages to a PostgreSQL database and automatically save logs locally if there’s a database failure, ensuring that no log data is lost.
+---
+
+# Logger PCK Documentation
+
+A comprehensive guide to using the `logger_pck` package for robust, flexible logging with database integration, local fallback, and advanced features for log management.
+
+---
 
 ## Table of Contents
 
-- [Features](#features)
-- [Installation](#installation)
-- [Configuration](#configuration)
-- [Usage](#usage)
-  - [Basic Logging](#basic-logging)
-  - [Logging Execution Time for Functions](#logging-execution-time-for-functions)
-  - [Using with Express Routes](#using-with-express-routes)
-- [Advanced Usage](#advanced-usage)
-  - [Syncing Failed Logs to Database](#syncing-failed-logs-to-database)
-  - [Accessing Logs via the API Server](#accessing-logs-via-the-api-server)
-- [Error Handling and Troubleshooting](#error-handling-and-troubleshooting)
-- [License](#license)
+1. [Introduction](#introduction)
+2. [Features](#features)
+3. [Installation](#installation)
+4. [Project Structure](#project-structure)
+5. [Configuration](#configuration)
+6. [Usage](#usage)
+    - [Basic Logging](#basic-logging)
+    - [Execution Time Logging](#execution-time-logging)
+    - [Express Route Logging](#express-route-logging)
+    - [Utility File Usage](#utility-file-usage)
+7. [Advanced Features](#advanced-features)
+    - [Failed Log Syncing](#failed-log-syncing)
+    - [Accessing Logs via API Server](#accessing-logs-via-api-server)
+8. [API Reference](#api-reference)
+    - [Functions](#functions)
+    - [Environment Variables](#environment-variables)
+9. [Error Handling](#error-handling)
+10. [License](#license)
+
+---
+
+## Introduction
+
+`logger_pck` is a robust logging package with database and local fallback mechanisms. It logs messages to a PostgreSQL database and automatically falls back to local storage in case of database failures, ensuring no data is lost. Additionally, it provides user-friendly utilities for developers to easily integrate logging into their projects.
+
+---
 
 ## Features
 
-- **Database Logging**: Logs messages to a PostgreSQL database for centralized, persistent logging.
-- **Local Fallback**: If the database is unreachable, logs are stored locally in JSON format and automatically retried for syncing at configurable intervals.
-- **Multiple Log Types and Severity Levels**: Supports various log levels (`info`, `error`, `warning`, `success`) and severity levels (`low`, `medium`, `high`) for flexible categorization.
-- **Execution Time Logging**: Provides a utility for logging the execution time of functions or routes, helping to monitor performance and identify bottlenecks.
-- **API Endpoint and Metadata Tracking**: Logs include structured metadata, API endpoint tracking, and function name identification for better traceability.
-- **API Server for Log Access**: Includes an optional Express-based API server for viewing, filtering, and managing logs.
-- **Environment Configuration**: Fully configurable via environment variables, allowing easy setup and customization for different environments.
+- **Database Logging**: Logs are stored centrally in a PostgreSQL database.
+- **Local Fallback**: Logs are saved locally when the database is unreachable.
+- **Log Levels**: Supports `info`, `error`, `warning`, and `success` levels.
+- **Execution Time Monitoring**: Measure and log execution times for functions or routes.
+- **API Integration**: Provides APIs to access and manage logs.
+- **Custom Utility File**: A sample utility file (`util.js`) is provided for easy integration into user projects.
+- **Environment Configuration**: Fully configurable via `.env` file.
+
+---
 
 ## Installation
 
-Install the package using npm:
+Install the package via npm:
 
 ```bash
 npm install logger_pck
 ```
 
+---
+
+## Project Structure
+
+```plaintext
+logger_pck
+├── package-lock.json
+├── package.json
+├── README.md
+├── script.js
+└── src
+    ├── api.js                 # API server for log access
+    ├── config.js              # Configuration and environment variable handling
+    ├── db.js                  # Database connection and schema setup
+    ├── fileSyncService.js     # Handles unsynced logs and retries
+    ├── index.js               # Main entry point
+    ├── logFunction.js         # Logging function for API and metadata tracking
+    ├── logger-util.js         # Utility functions for advanced logging
+    ├── logger.js              # Core logger implementation
+    ├── sync.js                # Log syncing logic
+    ├── syncReports.js         # Generates reports for synced logs
+```
+
+**Note:** The `util.js` file is not part of this package and needs to be manually added to your project's `util` folder.
+
+---
+
 ## Configuration
 
 ### Step 1: Set Up PostgreSQL Database
 
-Ensure you have PostgreSQL installed and a database created for logging. You can create a new database using:
+Create a PostgreSQL database:
 
 ```sql
 CREATE DATABASE logger;
@@ -47,43 +96,44 @@ CREATE DATABASE logger;
 
 ### Step 2: Configure Environment Variables
 
-Create a `.env` file in your project root directory and set the following variables:
+Create a `.env` file in the project root with the following content:
 
 ```plaintext
 PORT=3000
-DB_USER=postgres          # Use 'postgres' as the user to match the owner
+DB_USER=postgres
 DB_HOST=localhost
-DB_NAME=logger            # Ensure DB_NAME is set to 'logger'
+DB_NAME=logger
 DB_PASSWORD=testbucket8600
 DB_PORT=5432
 DASHBOARD_URL=http://localhost:3000
 APPLICATION_NAME=testapp
-UNSYNCED_LOGS_PATH=./logs/unsynced_logs.json  # Specify path for unsynced logs
-SYNC_INTERVAL=60000  # Sync interval in milliseconds (1 minute = 60000 ms)
+UNSYNCED_LOGS_PATH=./logs/unsynced_logs.json
+SYNC_INTERVAL=60000
 ```
+
+---
 
 ## Usage
 
 ### Basic Logging
 
-To log messages, import the `logMessage` function and call it with your message and metadata.
+Log messages with metadata:
 
 ```javascript
-const { logMessage } = require('logger_pck/src/utils');
+const { logMessage } = require('logger_pck/src/logger-util');
 
-logMessage('This is an informational message', 'info', { userId: 123 });
-logMessage('An error occurred', 'error', { error: 'File not found' });
+logMessage('Informational message', 'info', { userId: 123 });
+logMessage('Error occurred', 'error', { error: 'File not found' });
 ```
 
-### Logging Execution Time for Functions
+### Execution Time Logging
 
-You can log the execution time of any function by wrapping it with `logWithExecutionTime`.
+Measure and log execution times for functions:
 
 ```javascript
-const { logWithExecutionTime } = require('logger_pck/src/utils');
+const { logWithExecutionTime } = require('logger_pck/src/logger-util');
 
 async function fetchData() {
-    // Simulate a delay
     await new Promise(resolve => setTimeout(resolve, 500));
     return 'Data fetched successfully';
 }
@@ -92,42 +142,49 @@ const loggedFetchData = logWithExecutionTime(fetchData, 'fetchData');
 loggedFetchData();
 ```
 
-This will log the start time, end time, and total execution time of `fetchData`.
+### Express Route Logging
 
-### Using with Express Routes
-
-To log the execution time of an Express route, use `logWithExecutionTime` to wrap the route handler:
+Wrap Express route handlers to log execution times:
 
 ```javascript
 const express = require('express');
-const { logWithExecutionTime } = require('logger_pck/src/utils');
+const { logWithExecutionTime } = require('logger_pck/src/logger-util');
 
 const app = express();
 
 app.get('/test', logWithExecutionTime(async (req, res) => {
-    res.send('This is a test endpoint');
+    res.send('Test endpoint');
 }, '/test'));
 
-app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
-});
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));
 ```
 
-## Advanced Usage
-You can use this comlte util also in your project
+---
+
+## Utility File Usage
+
+The `util.js` file is a helper that users need to create and integrate into their project. Place this file in a `util` folder inside your project.
+
+### `util.js` Code:
+
 ```javascript
-// src/utils.js
 const { log } = require('logger_pck/src/logger-util');
 
 /**
  * Logs a custom message with metadata.
- * @param {String} message - The log message.
- * @param {String} logType - The type of log (e.g., 'info', 'error', 'success').
- * @param {String} apiEndpoint - The API endpoint or function associated with the log.
- * @param {String} severity - The severity level (e.g., 'low', 'medium', 'high').
- * @param {Object} metadata - Additional metadata for the log.
+ * @param {Object} logData - The log data containing various properties.
  */
-function logMessage(message, logType = 'info', apiEndpoint = '', severity = 'low', metadata = {}) {
+function logMessage(logData = {}) {
+    const {
+        message = 'No message provided',
+        logType = '', // Default log type
+        apiEndpoint = '',
+        severity = 'info',
+        metadata = {},
+        jsondata = {},
+        transactionId
+    } = logData;
+
     log({
         logType,
         message,
@@ -137,48 +194,47 @@ function logMessage(message, logType = 'info', apiEndpoint = '', severity = 'low
             ...metadata,
             timestamp: new Date().toISOString(),
         },
+        jsondata: {
+            ...jsondata,
+            timestamp: new Date().toISOString(),
+        },
+        transactionId,
     });
 }
 
 /**
  * Logs an error message.
- * @param {String} message - The error message.
- * @param {String} apiEndpoint - The API endpoint associated with the log.
- * @param {Object} metadata - Additional metadata for the log.
+ * @param {Object} logData - The log data containing various properties.
  */
-function logError(message, apiEndpoint = '', metadata = {}) {
-    logMessage(message, 'error', apiEndpoint, 'high', metadata);
+function logError(logData = {}) {
+    logMessage({ ...logData, severity: 'error' });
 }
 
 /**
  * Logs a warning message.
- * @param {String} message - The warning message.
- * @param {String} apiEndpoint - The API endpoint associated with the log.
- * @param {Object} metadata - Additional metadata for the log.
+ * @param {Object} logData - The log data containing various properties.
  */
-function logWarning(message, apiEndpoint = '', metadata = {}) {
-    logMessage(message, 'warning', apiEndpoint, 'medium', metadata);
+function logWarning(logData = {}) {
+    logMessage({ ...logData, severity: 'warning' });
 }
 
 /**
  * Logs a success message.
- * @param {String} message - The success message.
- * @param {String} apiEndpoint - The API endpoint associated with the log.
- * @param {Object} metadata - Additional metadata for the log.
+ * @param {Object} logData - The log data containing various properties.
  */
-function logSuccess(message, apiEndpoint = '', metadata = {}) {
-    logMessage(message, 'success', apiEndpoint, 'low', metadata);
+function logSuccess(logData = {}) {
+    logMessage({ ...logData, severity: 'success' });
 }
 
 /**
  * Wraps a function to log its execution time and custom message.
  * @param {Function} func - The function to be wrapped.
- * @param {String} functionName - The name of the function being logged.
- * @param {String} severity - The severity level for execution log (default is 'low').
- * @param {String} apiEndpoint - The API endpoint or function associated with the log.
+ * @param {Object} config - The configuration object for logging.
  * @returns {Function} - A new function that logs execution time and calls the original function.
  */
-function logWithExecutionTime(func, functionName, severity = 'low', apiEndpoint = '') {
+function logWithExecutionTime(func, config = {}) {
+    const { functionName = 'Unnamed Function', severity = 'info', apiEndpoint = '' } = config;
+
     return async function (...args) {
         const startTime = Date.now();
         let result;
@@ -188,18 +244,28 @@ function logWithExecutionTime(func, functionName, severity = 'low', apiEndpoint 
             result = await func(...args);
         } catch (error) {
             // Log an error if the function throws an exception
-            logError(`Error in ${functionName}: ${error.message}`, apiEndpoint, { functionName });
+            logError({
+                message: `Error in ${functionName}: ${error.message}`,
+                apiEndpoint,
+                metadata: { functionName },
+            });
             throw error; // Re-throw the error after logging
         } finally {
             const endTime = Date.now();
             const executionTime = endTime - startTime;
 
             // Log the execution time and details
-            logMessage(`${functionName} executed`, 'info', apiEndpoint, severity, {
-                functionName,
-                startTime,
-                endTime,
-                executionTime: `${executionTime}ms`,
+            logMessage({
+                message: `${functionName} executed`,
+                logType,
+                apiEndpoint,
+                severity: 'info',
+                metadata: {
+                    functionName,
+                    startTime,
+                    endTime,
+                    executionTime: `${executionTime}ms`,
+                },
             });
         }
 
@@ -207,92 +273,177 @@ function logWithExecutionTime(func, functionName, severity = 'low', apiEndpoint 
     };
 }
 
-module.exports = { logMessage, logError, logWarning, logSuccess, logWithExecutionTime };
-```
-Below is the example of how you can utilize util
-```javascript
-// index.js
-const express = require('express');
-const { logMessage, logError, logWarning, logSuccess, logWithExecutionTime } = require('./utils');
-require('dotenv').config();
+/**
+ * Extracts user details from the request object.
+ * @param {Object} req - The request object.
+ * @returns {Object} - An object containing user details.
+ */
+function getUserDetails(req = {}) {
+    const {
+        user: { ipAddress = 'N/A', userID = 'N/A', email = 'N/A', name = 'N/A' } = {},
+        ip,
+        headers: { 'x-forwarded-for': forwardedFor } = {},
+        connection: { remoteAddress } = {},
+        transactionId = 'N/A',
+        originalUrl = ''
+    } = req;
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+    const USERIP = ipAddress || ip || forwardedFor || remoteAddress || 'N/A';
+    const apiEndpoint = originalUrl.replace('/api', '');
 
-// Example function to demonstrate logging within a custom function
-async function exampleFunction(param) {
-    // Simulate some processing
-    await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
-    return `Processed: ${param}`;
+    return { USERIP, USERID: userID, EMAIL: email, NAME: name, transactionId, apiEndpoint };
 }
 
-// Wrap `exampleFunction` with `logWithExecutionTime`
-// Use severity 'medium' and specify the endpoint or function name
-const loggedExampleFunction = logWithExecutionTime(exampleFunction, 'exampleFunction', 'medium', '/exampleFunction');
+const apiLogger = (req, res, next) => {
+  const start = Date.now();
+  const transactionId = uuidv4(); // Generate a unique identifier
+  req.transactionId = transactionId;
 
-// Define a test endpoint to log execution time of `loggedExampleFunction`
-app.get('/test', async (req, res) => {
-    try {
-        const result = await loggedExampleFunction('test param');
-        logSuccess('GET /test endpoint accessed', '/test', { method: 'GET' });
-        res.send(result);
-    } catch (error) {
-        logError('Error accessing /test endpoint', '/test', { method: 'GET' });
-        res.status(500).send('Error occurred');
-    }
-});
+  // Extract user details from the request
+  const { USERIP, USERID, EMAIL, NAME, apiEndpoint } = getUserDetails(req);
 
-// Start the server and log a success message
-app.listen(PORT, () => {
-    logSuccess(`Server started on port ${PORT}`, '/start', { port: PORT });
-    console.log(`Backend server running on http://localhost:${PORT}`);
-});
+  // Log the incoming API request
+  logMessage({
+      message: `API request received for ${apiEndpoint}`,
+      logType: 'request',
+      severity: 'info',
+      apiEndpoint,
+      metadata: {
+          transactionId,
+          method: req.method,
+          host: req.get('host'),
+          url: req.originalUrl,
+          userIP: USERIP,
+          userID: USERID,
+          userEmail: EMAIL,
+          userName: NAME,
+      },
+      jsondata: {
+          body: req.body,
+          query: req.query,
+          params: req.params,
+      },
+  });
+
+  // Add transaction ID to the response header
+  res.setHeader('X-Transaction-ID', transactionId);
+
+  // Listen for the response's finish event to log response details
+  res.on('finish', () => {
+      const responseTime = Date.now() - start;
+
+      logMessage({
+          message: `API response sent for ${apiEndpoint}`,
+          logType: 'response',
+          severity: 'info',
+          apiEndpoint,
+          metadata: {
+              transactionId,
+              method: req.method,
+              statusCode: res.statusCode,
+              responseTime: `${responseTime}ms`,
+              userIP: USERIP,
+              userID: USERID,
+              userEmail: EMAIL,
+              userName: NAME,
+          },
+          jsondata: {
+              statusMessage: res.statusMessage || 'N/A',
+          },
+      });
+  });
+
+  // Proceed to the next middleware or route handler
+  next();
+};
+
+module.exports = { logMessage, logError, logWarning, logSuccess, logWithExecutionTime, getUserDetails, apiLogger };
 ```
 
-### Syncing Failed Logs to Database
-
-If a log fails to be saved to the database, it will be stored locally in a JSON file (`logs/unsynced_logs.json`). The package automatically attempts to sync these failed logs to the database every 2 hours.
-
-To configure the syncing interval, edit the `sync.js` file and adjust the `setInterval` function if needed.
-
-### Accessing Logs via the API Server
-
-The package includes an Express API server to view and filter logs. Start the server by calling:
+### Example Usage:
 
 ```javascript
-const { initializeLoggerService } = require('logger_pck/src/index');
-initializeLoggerService();
+const { logInfo, logError } = require('./util/util');
+
+// Log an informational message
+logInfo('Server started', { port: 3000 });
+
+// Log an error message
+logError('Database connection failed', { db: 'PostgreSQL' });
 ```
 
-#### API Endpoints
+---
 
-- **GET /logs**: Retrieves logs with optional query parameters.
+## Advanced Features
 
-  - **Query Parameters**:
-    - `platform`: Filter by platform (e.g., app name).
-    - `logType`: Filter by log type (e.g., info, error).
-    - `date`: Filter by log date.
+### Failed Log Syncing
 
-  - **Example**:
-    ```bash
-    curl http://localhost:4000/logs?platform=YourAppName&logType=info
-    ```
+Logs saved locally are periodically synced to the database. Configure the sync interval using the `SYNC_INTERVAL` variable in `.env`.
 
-## Error Handling and Troubleshooting
+### Accessing Logs via API Server
 
-1. **Database Connection Issues**:
-   - Ensure your PostgreSQL server is running and the credentials in `.env` are correct.
-   - If connection issues persist, verify your network configuration or firewall settings.
+The package includes an optional Express-based API server to view and filter logs:
 
-2. **Syntax Errors in `unsynced_logs.json`**:
-   - Malformed JSON in `unsynced_logs.json` can cause parsing errors during sync. Open the file, remove any incomplete or corrupted entries, and save it.
+```javascript
+const express = require('express');
+const { setupApiRoutes } = require('logger_pck/src/api');
 
-3. **Port Conflicts**:
-   - If `EADDRINUSE` errors occur, change the port number for the API server in `.env` or by modifying `API_PORT` in `config.js`.
+const app = express();
+setupApiRoutes(app);
 
-4. **Permission Issues**:
-   - If you encounter file permission issues with `unsynced_logs.json`, ensure the application has write access to the directory.
+app.listen(3001, () => console.log('API server running on http://localhost:3001'));
+```
+
+---
+
+## API Reference
+
+### Functions
+
+#### `logMessage(message, level, metadata)`
+Logs a message with a specified level and metadata.
+
+- `message`: String - The message to log.
+- `level`: String - The log level (`info`, `error`, `warning`, `success`).
+- `metadata`: Object - Additional metadata to log.
+
+#### `logWithExecutionTime(fn, functionName)`
+Wraps a function and logs its execution time.
+
+- `fn`: Function - The function to wrap.
+- `functionName`: String - The name of the function.
+
+#### Utility File Functions
+
+- `logInfo(message, metadata)`: Logs informational messages.
+- `logError(message, metadata)`: Logs error messages.
+- `logWarning(message, metadata)`: Logs warning messages.
+- `logSuccess(message, metadata)`: Logs success messages.
+
+### Environment Variables
+
+- `PORT`: The port number for the application.
+- `DB_USER`: PostgreSQL username.
+- `DB_HOST`: PostgreSQL host.
+- `DB_NAME`: PostgreSQL database name.
+- `DB_PASSWORD`: PostgreSQL password.
+- `DB_PORT`: PostgreSQL port.
+- `DASHBOARD_URL`: URL for accessing the log dashboard.
+- `UNSYNCED_LOGS_PATH`: Path for storing unsynced logs.
+- `SYNC_INTERVAL`: Interval for syncing logs (in milliseconds).
+
+---
+
+## Error Handling
+
+If logging to the database fails, logs are saved locally to ensure no data is lost. Errors are logged with details to aid troubleshooting.
+
+---
 
 ## License
 
-This package is licensed under the MIT License.
+This project is licensed under the MIT License. See `LICENSE` for more details.
+
+---
+
+This README now makes it clear that users need to add the `util.js` file themselves and includes the full code for it.
