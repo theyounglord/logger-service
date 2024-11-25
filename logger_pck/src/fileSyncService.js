@@ -1,33 +1,53 @@
-// src/fileSyncService.js
 const fs = require('fs');
 const path = require('path');
 const config = require('./config');
 const { log } = require('./logFunction');
 
 async function syncFiles() {
+
+    const isLocalAppSyncEnabled = config.localAppSyncEnabled;
+    if (!isLocalAppSyncEnabled) {
+        console.warn('Local app sync is not enabled, skipping file synchronization.');
+        return;
+    }
+
     const rootFolder = config.rootFolderPath;
 
     try {
+        if (!fs.existsSync(rootFolder)) {
+            console.warn(`Root folder not found: ${rootFolder}`);
+            return;
+        }
+
         const userFolders = fs.readdirSync(rootFolder);
 
         for (const userId of userFolders) {
             const userFolderPath = path.join(rootFolder, userId);
-            const userStats = fs.statSync(userFolderPath);
 
-            if (!userStats.isDirectory()) continue;
+            if (!fs.existsSync(userFolderPath) || !fs.statSync(userFolderPath).isDirectory()) {
+                console.warn(`Skipping invalid or missing folder: ${userFolderPath}`);
+                continue;
+            }
 
             const appFolders = fs.readdirSync(userFolderPath);
 
             for (const appId of appFolders) {
                 const appFolderPath = path.join(userFolderPath, appId);
-                const appStats = fs.statSync(appFolderPath);
 
-                if (!appStats.isDirectory()) continue;
+                if (!fs.existsSync(appFolderPath) || !fs.statSync(appFolderPath).isDirectory()) {
+                    console.warn(`Skipping invalid or missing folder: ${appFolderPath}`);
+                    continue;
+                }
 
                 const files = fs.readdirSync(appFolderPath);
 
                 for (const file of files) {
                     const filePath = path.join(appFolderPath, file);
+
+                    if (!fs.existsSync(filePath)) {
+                        console.warn(`File not found, skipping: ${filePath}`);
+                        continue;
+                    }
 
                     if (file.endsWith('.report.json')) {
                         await processReportFile(filePath, userId, appId);
@@ -44,6 +64,11 @@ async function syncFiles() {
 
 async function processReportFile(filePath, userId, appId) {
     try {
+        if (!fs.existsSync(filePath)) {
+            console.warn(`Report file not found, skipping: ${filePath}`);
+            return;
+        }
+
         const data = fs.readFileSync(filePath, 'utf8');
         const jsonData = JSON.parse(data);
 
@@ -75,6 +100,11 @@ async function processReportFile(filePath, userId, appId) {
 
 async function processSessionFile(filePath, userId, appId) {
     try {
+        if (!fs.existsSync(filePath)) {
+            console.warn(`Session file not found, skipping: ${filePath}`);
+            return;
+        }
+
         const data = fs.readFileSync(filePath, 'utf8');
         const jsonData = JSON.parse(data);
 

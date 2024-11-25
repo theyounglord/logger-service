@@ -4,7 +4,7 @@ const { logMessage, logError, logWarning, logSuccess, logWithExecutionTime } = r
 require('dotenv').config();
 
 const app = express();
-const PORT = 0; // Set to 0 to dynamically assign an available port
+const PORT = 3001; // Set to 0 to dynamically assign an available port
 
 // Example function to demonstrate logging within a custom function
 async function exampleFunction(param) {
